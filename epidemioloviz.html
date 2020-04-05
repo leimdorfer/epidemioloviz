@@ -1,0 +1,274 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+    <style>
+    body {
+        background:#b5d0d0;
+        font-family:Arial;
+    }
+    .h1 {
+        color:#285585;
+        padding: 20px
+    }
+
+    #container {
+        border-radius:.125em;
+        border:2px solid #ccc;
+        margin:45px;
+        background:white;
+        float:left;
+        width:800px;
+        height:400px;
+        position: relative;
+    }
+
+    .person {
+        display: block;
+        width:5px;
+        height:5px;
+        position: absolute;
+    }
+    .uninfected {
+        background:darkgray;
+    }
+    .infected {
+        background:red;
+    }
+    .imune {
+        background:green;
+    }
+
+  
+    </style>
+</head>
+
+<body>
+
+    <h1>My epidemic visualisation</h1>
+
+    <button onclick="doAnimation();">Start Infection</button>
+
+    <p> Infections: <div id="infections">0</div></p>
+
+
+	<div id="container"></div>
+
+
+
+	<script>
+
+        function init(){
+
+            // Some Globals
+            // set limit of position within container
+            max_width = document.getElementById("container").clientWidth-5;
+            max_height = document.getElementById("container").clientHeight-5;
+
+            number_of_people = 300;
+            start_infected = 1;
+            infectiousness = 5;
+            animation_duration = 10000;
+            animation_count = 0;
+            total_infected = start_infected; // This goes up as people get infected
+
+            // This is the array where we store the infected count per animation
+            total_infected_over_time = [];
+
+            // This is the array where we store the people objects
+            people = [];
+
+            createPeople();
+            distributePeople();
+            infectPeople();
+            setMovement();
+
+        }
+
+
+
+        function createPeople() {
+
+            for(var i=0;i<number_of_people;i++){
+
+                // Create a <div> element
+                var person = document.createElement("div"); 
+                // Append person to <div> with id="container" 
+                document.getElementById("container").appendChild(person); 
+                // Get element in the document
+                var new_person = document.getElementById('container').getElementsByTagName('div')[i];  
+                var element_class = document.createAttribute("class");  // add "class" attribute
+                element_class.value = "person uninfected";                 // Set value of class
+                new_person.setAttributeNode(element_class);
+
+                // create object for each person with default values and add to people array
+                people.push({
+                    element: document.getElementById('container').getElementsByTagName('div')[i],
+                    class:"uninfected", 
+                    move_x:0, 
+                    move_y:0,
+                    left:0,
+                    top:0
+                });
+
+            }
+
+        };
+
+        function distributePeople(){
+
+            // Set a random starting point for each person
+            for(var i=0;i<number_of_people;i++){
+
+                var start_x = Math.floor(Math.random() * max_width);
+                var start_y = Math.floor(Math.random() * max_height);
+
+                people[i].left = start_x;
+                people[i].top = start_y;
+
+                // the element is in the object in the people array
+                var this_person = people[i].element;
+
+                this_person.style.left=start_x+"px";
+                this_person.style.top=start_y+"px";
+            }
+        };
+
+        function infectPeople(){
+
+            for(var i=0;i<start_infected;i++){
+
+                people[i].element.classList.toggle("infected");
+                people[i].class="infected";
+
+            }
+
+        };
+
+        function setMovement(){
+
+            // Set a random movement for x and y for each person -1,0 or 1
+            for(var i=0;i<number_of_people;i++){
+
+                var move_x = Math.floor(Math.random() * 3);
+                var move_y = Math.floor(Math.random() * 3);
+
+                if(move_x===2) move_x = -1; 
+                if(move_y===2) move_y = -1; 
+
+
+                people[i].move_x = move_x;
+                people[i].move_y = move_y;
+
+            }
+        };
+
+        function doAnimation(){
+
+            var startTime = new Date().getTime();
+            var interval = setInterval(function(){
+                if(new Date().getTime() - startTime > animation_duration){
+                    clearInterval(interval);
+                    count_infected();
+                    return;
+                }
+                //do animation
+                animatePeople()
+
+            }, 20);
+
+        };
+
+        function animatePeople(){
+            
+            animation_count++;
+            if(animation_count%75===0) setMovement();
+
+            // Move each person x and y.
+            for(var i=0;i<number_of_people;i++){
+
+                // the element is in the object in the people array
+                var this_person = people[i].element;
+
+                var next_x = people[i].left+people[i].move_x;
+                var next_y = people[i].top+people[i].move_y;
+
+                people[i].left = next_x;
+                people[i].top = next_y;
+
+                this_person.style.left=next_x+"px";
+                this_person.style.top=next_y+"px";
+
+                checkLimits(i,next_x,next_y);
+            }
+
+            checkCollisions();
+         
+        };
+
+        function checkLimits(id,x,y){
+
+            // Bounce off the walls
+            if(x>max_width) people[id].move_x=-1;
+            if(x<5) people[id].move_x=1;
+            if(y>max_height) people[id].move_y=-1;
+            if(y<0) people[id].move_y=1;
+
+        };
+
+        function checkCollisions(){
+
+            var this_infection_count=0;
+
+            for(var i=0;i<number_of_people;i++){
+
+                var this_x = people[i].left;
+                var this_y = people[i].top;
+
+                // If your infected or immune you don't get infected again
+                if (people[i].class==="uninfected"){ 
+
+                    for(var j=0;j<number_of_people;j++){
+                        //If to people collide and one is infected the other gets infected
+                        if( (this_x-people[j].left)<infectiousness && 
+                            (this_x-people[j].left)>-infectiousness &&
+                            (this_y-people[j].top)<infectiousness && 
+                            (this_y-people[j].top)>-infectiousness && 
+                            i!=j &&
+                            people[j].class==="infected"
+                        ){
+                        
+                            people[i].element.classList.toggle("infected");
+                            people[i].class="infected";
+                            this_infection_count++;
+                        }
+
+                    }
+
+                }
+            }
+
+            total_infected = total_infected+this_infection_count;
+
+            total_infected_over_time.push(total_infected);
+        };
+
+        function count_infected(){
+
+            //Count the infected
+            console.log(total_infected_over_time);
+
+        }
+
+        init();
+
+
+
+</script>
+
+
+</body>
+</html>
