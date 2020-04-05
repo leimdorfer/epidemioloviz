@@ -4,7 +4,6 @@
 <head>
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
     <meta content="utf-8" http-equiv="encoding">
-	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
     <style>
     body {
         background:#b5d0d0;
@@ -12,16 +11,45 @@
     }
     .h1 {
         color:#285585;
-        padding: 20px
+        padding: 10px
     }
 
     #container {
-        border-radius:.125em;
-        border:2px solid #ccc;
-        margin:45px;
-        background:white;
+        margin:20px;
+        position: relative;
+    }
+    #container:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+
+    #experiment {
         float:left;
+    }
+
+    #controls {
+        margin:5px;
+    }
+
+    #viz {
+        border-radius:.125em;
+        border:2px solid #ccc;   
+        background:white;
         width:800px;
+        height:400px;
+        position: relative;
+    }
+
+    #analysis {
+        float:left;
+    }
+
+    #chart {
+        border-left:2px solid #333;
+        border-bottom:2px solid #333;
+        margin:5px;   
+        width:240px;
         height:400px;
         position: relative;
     }
@@ -42,6 +70,15 @@
         background:green;
     }
 
+    .datapoint{
+        display: block;
+        width:1px;
+        height:1px;
+        position: absolute;
+        top:399px;
+        background:red;
+    }
+
   
     </style>
 </head>
@@ -50,33 +87,54 @@
 
     <h1>My epidemic visualisation</h1>
 
-    <button onclick="doAnimation();">Start Infection</button>
+<div id="container">
 
-    <p> Infections: <div id="infections">0</div></p>
+    <div id="experiment">
+
+        <div id="controls">
+            <button onclick="doAnimation();">Start Infection</button> <br>
+        </div>
+        <div id="viz"></div>
+
+    </div>
 
 
-	<div id="container"></div>
+    <div id="analysis">
 
+        Total infections: <span id="infections_count">0</span>
 
+        <div id="chart">
+            <div class="datapoint"></div>
+        </div>
+
+    </div>
+
+</div>
 
 	<script>
 
         function init(){
 
             // Some Globals
-            // set limit of position within container
-            max_width = document.getElementById("container").clientWidth-5;
-            max_height = document.getElementById("container").clientHeight-5;
+            // set limit of position within viz
+            max_width = document.getElementById("viz").clientWidth-5;
+            max_height = document.getElementById("viz").clientHeight-5;
 
-            number_of_people = 300;
+            number_of_people = 400;
             start_infected = 1;
-            infectiousness = 5;
+            infectiousness = 4;
             animation_duration = 10000;
+            stay_at_home = 0;
+
             animation_count = 0;
             total_infected = start_infected; // This goes up as people get infected
+            infections_count = document.getElementById('infections_count');
+            analysis_count = 0; //counts each time we run display_analysis
 
             // This is the array where we store the infected count per animation
-            total_infected_over_time = [];
+            //total_infected_over_time = []; Not needed?
+
+            
 
             // This is the array where we store the people objects
             people = [];
@@ -96,17 +154,17 @@
 
                 // Create a <div> element
                 var person = document.createElement("div"); 
-                // Append person to <div> with id="container" 
-                document.getElementById("container").appendChild(person); 
+                // Append person to <div> with id="viz" 
+                document.getElementById("viz").appendChild(person); 
                 // Get element in the document
-                var new_person = document.getElementById('container').getElementsByTagName('div')[i];  
+                var new_person = document.getElementById('viz').getElementsByTagName('div')[i];  
                 var element_class = document.createAttribute("class");  // add "class" attribute
                 element_class.value = "person uninfected";                 // Set value of class
                 new_person.setAttributeNode(element_class);
 
                 // create object for each person with default values and add to people array
                 people.push({
-                    element: document.getElementById('container').getElementsByTagName('div')[i],
+                    element: document.getElementById('viz').getElementsByTagName('div')[i],
                     class:"uninfected", 
                     move_x:0, 
                     move_y:0,
@@ -163,6 +221,8 @@
                 people[i].move_x = move_x;
                 people[i].move_y = move_y;
 
+                // Add stay_at_home variable
+
             }
         };
 
@@ -172,13 +232,12 @@
             var interval = setInterval(function(){
                 if(new Date().getTime() - startTime > animation_duration){
                     clearInterval(interval);
-                    count_infected();
                     return;
                 }
                 //do animation
                 animatePeople()
 
-            }, 20);
+            }, 10);
 
         };
 
@@ -206,6 +265,12 @@
             }
 
             checkCollisions();
+
+            // Every 200 milliseconds do some analysis
+            if(animation_count%20===0) {
+                analysis_count++;
+                display_analysis();
+            }
          
         };
 
@@ -253,13 +318,26 @@
 
             total_infected = total_infected+this_infection_count;
 
-            total_infected_over_time.push(total_infected);
         };
 
-        function count_infected(){
+        function display_analysis(){
 
-            //Count the infected
-            console.log(total_infected_over_time);
+            // Display total infections
+            infections_count.innerHTML = total_infected;
+
+            // Create a <div> element
+            var datapoint = document.createElement("div");
+
+            datapoint.setAttribute("class", "datapoint");
+            document.getElementById("chart").appendChild(datapoint);
+
+            var this_point = document.getElementById("chart").getElementsByTagName("div")[analysis_count];
+
+            this_point.style.left=(analysis_count)+"px"; //move left with time
+            this_point.style.top=(400-(total_infected))+"px";
+            this_point.style.height=(total_infected)+"px";
+
+
 
         }
 
