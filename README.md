@@ -7,6 +7,9 @@ Inspired by this really nicely done piece in the Washington Post on "Why outbrea
 
 Anyway, this is as far as I got and below there are a few things I thought about while I was doing it.
 
+[a relative link](epidemioloviz/epidemioloviz.html) 
+
+
 ## How it works
 
 Essentially, there are a bunch of little (5px) "people-divs" which are distributed randomly and animated to move inside a container-div. 1 person has the class "infected" at the start of the animation and if any of the other people-divs come within 4px of the infected person they too get the class "infected" and so on. There are a few global settings like the number_of_people (300) and the animation_duration (10 secs) which are set at the start.
