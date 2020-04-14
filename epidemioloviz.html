@@ -49,8 +49,8 @@
         border-left:2px solid #333;
         border-bottom:2px solid #333;
         margin:5px;   
-        width:240px;
-        height:400px;
+        width:110px;
+        height:300px;
         position: relative;
     }
 
@@ -63,8 +63,17 @@
     .uninfected {
         background:darkgray;
     }
+    .distancing {
+        background:darkgray;
+        border:1px solid #34eb59;
+    }
     .infected {
-        background:red;
+        background:#bd251a;
+    }
+    .isolated {
+        border:1px solid #333;
+        width:3px;
+        height:3px;
     }
     .imune {
         background:green;
@@ -72,11 +81,11 @@
 
     .datapoint{
         display: block;
-        width:1px;
+        width:2px;
         height:1px;
         position: absolute;
         top:399px;
-        background:red;
+        background:#bd251a;
     }
 
   
@@ -85,14 +94,32 @@
 
 <body>
 
-    <h1>My epidemic visualisation</h1>
+    <h1>My epidemic visualisation is wrong</h1>
 
 <div id="container">
 
     <div id="experiment">
 
         <div id="controls">
-            <button onclick="doAnimation();">Start Infection</button> <br>
+            <button onclick="doAnimation();">Start Infection</button> 
+            <button onclick="init();">Reset</button>
+            Staying at home:
+            <select id="set_stay_at_home">
+                <option value="0" selected>None</option>
+                <option value="100">1%</option>
+                <option value="10">10%</option>
+                <option value="4">25%</option>
+                <option value="2">50%</option>
+            </select>
+            Social distancing:
+            <select id="set_distancing">
+                <option value="0" selected>None</option>
+                <option value="100">1%</option>
+                <option value="10">10%</option>
+                <option value="4">25%</option>
+                <option value="2">50%</option>
+            </select>
+        
         </div>
         <div id="viz"></div>
 
@@ -102,9 +129,9 @@
     <div id="analysis">
 
         Total infections: <span id="infections_count">0</span>
+        <span id="infections_percent"></span>
 
         <div id="chart">
-            <div class="datapoint"></div>
         </div>
 
     </div>
@@ -120,29 +147,24 @@
             max_width = document.getElementById("viz").clientWidth-5;
             max_height = document.getElementById("viz").clientHeight-5;
 
-            number_of_people = 400;
-            start_infected = 1;
-            infectiousness = 4;
+            number_of_people = 300;
+            isolated = 0;
+            infected = 1;
+            distancing = 0;
+            infectiousness = 4; // how do people (pixels) need to come to catch it
             animation_duration = 10000;
-            stay_at_home = 0;
 
             animation_count = 0;
-            total_infected = start_infected; // This goes up as people get infected
-            infections_count = document.getElementById('infections_count');
+
+            // Reset Analysis
             analysis_count = 0; //counts each time we run display_analysis
-
-            // This is the array where we store the infected count per animation
-            //total_infected_over_time = []; Not needed?
-
-            
+            document.getElementById("chart").innerHTML = "";
 
             // This is the array where we store the people objects
             people = [];
 
             createPeople();
             distributePeople();
-            infectPeople();
-            setMovement();
 
         }
 
@@ -193,40 +215,113 @@
                 this_person.style.left=start_x+"px";
                 this_person.style.top=start_y+"px";
             }
+            
         };
 
-        function infectPeople(){
+        function get_selected_values(){ // from use selection in dropdowns
 
-            for(var i=0;i<start_infected;i++){
+            var e1 = document.getElementById("set_stay_at_home");
+            var isolation_value = parseInt(e1.options[e1.selectedIndex].value);
+
+            if (isolation_value===0) {
+
+                isolated=0;
+
+            } else {
+
+                isolated = number_of_people/isolation_value;
+            } 
+
+            var e2 = document.getElementById("set_distancing");
+            var distancing_value = parseInt(e2.options[e2.selectedIndex].value);
+
+            if (distancing_value===0) {
+
+                distancing=0;
+
+            } else {
+                // of those not isolated how may are distancing
+                distancing = (number_of_people-isolated)/distancing_value;
+            } 
+
+        }
+
+        function isolateAndInfectPeople(){
+
+            for(var i=0;i<isolated;i++){
+
+                people[i].element.classList.toggle("isolated");
+                people[i].class="isolated";
+
+            };
+
+            for(var i=isolated;i<(isolated+infected);i++){
 
                 people[i].element.classList.toggle("infected");
                 people[i].class="infected";
 
-            }
+            };
 
+            for(var i=(isolated+infected);i<(isolated+infected+distancing);i++){
+
+                people[i].element.classList.toggle("distancing");
+                people[i].class="distancing";
+
+            };
         };
 
         function setMovement(){
 
             // Set a random movement for x and y for each person -1,0 or 1
-            for(var i=0;i<number_of_people;i++){
+            for(var i=isolated;i<number_of_people;i++){
 
-                var move_x = Math.floor(Math.random() * 3);
-                var move_y = Math.floor(Math.random() * 3);
+                var element = people[i].element;
 
-                if(move_x===2) move_x = -1; 
-                if(move_y===2) move_y = -1; 
+                var direction = Math.floor(Math.random() * 8);
 
+                switch(direction) {
+                    case 0:
+                        move_x = 0; move_y = 1;
+                        break
+                    case 1:
+                        move_x = 0; move_y = -1;
+                        break
+                    case 2:
+                        move_x = 1; move_y = 0;
+                        break
+                    case 3:
+                        move_x = 1; move_y = 1;
+                        break
+                    case 4:
+                        move_x = 1; move_y = -1;
+                        break
+                    case 5:
+                        move_x = -1; move_y = 0;
+                        break
+                    case 6:
+                        move_x = -1; move_y = 1;
+                        break
+                    default:
+                        move_x = -1; move_y = -1;                 
+                }
 
                 people[i].move_x = move_x;
                 people[i].move_y = move_y;
 
-                // Add stay_at_home variable
 
             }
         };
 
+
         function doAnimation(){
+
+            if (animation_count===0) {
+
+                get_selected_values()
+                isolateAndInfectPeople();
+                setMovement();
+
+            }
 
             var startTime = new Date().getTime();
             var interval = setInterval(function(){
@@ -247,7 +342,7 @@
             if(animation_count%75===0) setMovement();
 
             // Move each person x and y.
-            for(var i=0;i<number_of_people;i++){
+            for(var i=isolated;i<number_of_people;i++){
 
                 // the element is in the object in the people array
                 var this_person = people[i].element;
@@ -268,7 +363,6 @@
 
             // Every 200 milliseconds do some analysis
             if(animation_count%20===0) {
-                analysis_count++;
                 display_analysis();
             }
          
@@ -288,7 +382,7 @@
 
             var this_infection_count=0;
 
-            for(var i=0;i<number_of_people;i++){
+            for(var i=isolated;i<number_of_people;i++){
 
                 var this_x = people[i].left;
                 var this_y = people[i].top;
@@ -297,7 +391,7 @@
                 if (people[i].class==="uninfected"){ 
 
                     for(var j=0;j<number_of_people;j++){
-                        //If to people collide and one is infected the other gets infected
+                        //If two people collide and one is infected the other gets infected
                         if( (this_x-people[j].left)<infectiousness && 
                             (this_x-people[j].left)>-infectiousness &&
                             (this_y-people[j].top)<infectiousness && 
@@ -309,6 +403,7 @@
                             people[i].element.classList.toggle("infected");
                             people[i].class="infected";
                             this_infection_count++;
+                            break;
                         }
 
                     }
@@ -316,15 +411,17 @@
                 }
             }
 
-            total_infected = total_infected+this_infection_count;
+            infected = infected+this_infection_count;
 
         };
 
         function display_analysis(){
 
             // Display total infections
-            infections_count.innerHTML = total_infected;
+            infections_count.innerHTML = infected + "/" +number_of_people;
+            infections_percent.innerHTML ="("+Math.round((infected/number_of_people)*100)+"%)";
 
+            // Draw a graph - needs work
             // Create a <div> element
             var datapoint = document.createElement("div");
 
@@ -333,11 +430,11 @@
 
             var this_point = document.getElementById("chart").getElementsByTagName("div")[analysis_count];
 
-            this_point.style.left=(analysis_count)+"px"; //move left with time
-            this_point.style.top=(400-(total_infected))+"px";
-            this_point.style.height=(total_infected)+"px";
+            this_point.style.left=(analysis_count*2)+"px"; //move left with time
+            this_point.style.top=(number_of_people-(infected))+"px";
+            this_point.style.height=(infected)+"px";
 
-
+            analysis_count++;
 
         }
 
