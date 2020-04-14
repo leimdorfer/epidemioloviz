@@ -5,9 +5,7 @@
 
 Inspired by this really nicely done piece in the Washington Post on "Why outbreaks like coronavirus spread exponentially, and how to flatten the curve” (https://www.washingtonpost.com/graphics/2020/world/corona-simulator/), I thought I'd have a go at doing something similar, more for fun than anything else, but my attempt to model the spread of a virus with JavaScript turned out, like a lot of those things where you start out thinking "yeah, I could have a go at that", to be a lot more difficult than I thought and just served to re-enforce what I really already knew, which is that doin this sort of thing properly must be really really hard. 
 
-Anyway, this is as far as I got and below there are a few things I thought about while I was doing it.
-
-[a relative link](epidemioloviz.html) 
+Anyway, [this is as far as I got](epidemioloviz.html) and below there are a few things I thought about while I was doing it.
 
 
 ## How it works
