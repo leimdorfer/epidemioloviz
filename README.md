@@ -7,7 +7,7 @@ Inspired by this really nicely done piece in the Washington Post on "Why outbrea
 
 Anyway, this is as far as I got and below there are a few things I thought about while I was doing it.
 
-[a relative link](epidemioloviz/epidemioloviz.html) 
+[a relative link](epidemioloviz.html) 
 
 
 ## How it works
@@ -17,7 +17,7 @@ Essentially, there are a bunch of little (5px) "people-divs" which are distribut
 I then added a very simple chart to show the infections curve and display the total infected and added a couple of ways to try and affect the rate of infection: Not moving (with the class .isolated) or continuing to move (with the class .distancing) - these can be changed with a dropdown by the user. Isolation and distancing people can't be infected.
 
 
-##So, what did I learn?
+## So, what did I learn?
 
 I'm not a very sophisticated programmer, so I accept I'll be doing all sorts of stuff wrong on that side of things, but, more interestingly there's some stuff I think I found out on a more general level.
 
