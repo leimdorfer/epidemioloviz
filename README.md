@@ -3,14 +3,14 @@
 
 ## Modelling epidemics must be really hard
 
-Inspired by this really nicely done piece in the Washington Post on "Why outbreaks like coronavirus spread exponentially, and how to flatten the curve” (https://www.washingtonpost.com/graphics/2020/world/corona-simulator/), I thought I'd have a go at doing something similar, more for fun than anything else, but my attempt to model the spread of a virus with JavaScript turned out, like a lot of those things where you start out thinking "yeah, I could have a go at that", to be a lot more difficult than I thought and just served to re-enforce what I really already knew, which is that doin this sort of thing properly must be really really hard. 
+Inspired by this really nicely done piece in the Washington Post on "Why outbreaks like coronavirus spread exponentially, and how to flatten the curve” (https://www.washingtonpost.com/graphics/2020/world/corona-simulator/), I thought I'd have a go at doing something similar, more for fun than anything else, but my attempt to model the spread of a virus with JavaScript turned out, like a lot of those things where you start out thinking "yeah, I could have a go at that", to be a lot more difficult than I thought, and just served to re-enforce what I really already knew, which is that doing this sort of thing properly must be really really hard. 
 
 Anyway, [this is as far as I got](epidemioloviz.html) and below there are a few things I thought about while I was doing it.
 
 
 ## How it works
 
-Essentially, there are a bunch of little (5px) "people-divs" which are distributed randomly and animated to move inside a container-div. 1 person has the class "infected" at the start of the animation and if any of the other people-divs come within 4px of the infected person they too get the class "infected" and so on. There are a few global settings like the number_of_people (300) and the animation_duration (10 secs) which are set at the start.
+Essentially, there are a bunch of little (5px) "people-divs" which are distributed randomly and animated to move inside a "container-div". 1 person has the class "infected" at the start of the animation and if any of the other people-divs come within 4px of the infected person they too get the class "infected" and so on. There are a few global settings like the number_of_people (300) and the animation_duration (10 secs) which are set at the start.
 
 I then added a very simple chart to show the infections curve and display the total infected and added a couple of ways to try and affect the rate of infection: Not moving (with the class .isolated) or continuing to move (with the class .distancing) - these can be changed with a dropdown by the user. Isolation and distancing people can't be infected.
 
@@ -31,7 +31,7 @@ Without adding any of the measures like isolation and distancing that would prot
 
 3. Isolation and distancing required high levels of adherence before it mattered
 
-As an extension of the previous two points, i.e the model for movement is wrong and the standard deviation of resulting infection is high, removing people from the risk of infection didn't really affect the curve for the remaining poeple until almost everyone was protected. I'm guessing this has something to do with the size of the "container" div - i.e. a change in the size of the available "safe" space in which people are moving is only increased by a tiny amount as each person protects themselves, so this needs to be a large number before the effect is noticable, particularly as chance plays a large role.
+As an extension of the previous two points, i.e the model for movement is wrong and the standard deviation of resulting infection is high, removing people from the risk of infection didn't really affect the curve for the remaining poeple until almost everyone was protected. I'm guessing this has something to do with the size of the "container" div - i.e. a change in the size of the available "safe" space in which people are moving is only increased by a tiny amount as each person protects themselves, so this needs to be a large number before the effect is noticable, particularly as chance plays a large role. Also, isolation and distancing in this programme are identical, so that distinction is a bit pointless here.
 
 4. More generally...
 
